@@ -9,7 +9,23 @@ const breadcrumbList = currentUrlPath.split("/").slice(1);
 // if breadcrumb is Home > Posts > 1 <etc>
 // replace Posts with Posts (page number)
 if (breadcrumbList[0] === "posts") {
-  breadcrumbList.splice(0, 2, `Posts (page ${breadcrumbList[1] || 1})`);
+  breadcrumbList.splice(
+    0,
+    2,
+    breadcrumbList[1] && breadcrumbList[1] !== "1"
+      ? `Posts (page ${breadcrumbList[1]})`
+      : "Posts"
+  );
+}
+
+if (breadcrumbList[0] === "notes") {
+  breadcrumbList.splice(
+    0,
+    2,
+    breadcrumbList[1] && breadcrumbList[1] !== "1"
+      ? `Notes (page ${breadcrumbList[1]})`
+      : "Notes"
+  );
 }
 
 // if breadcrumb is Home > Tags > [tag] > [page] <etc>

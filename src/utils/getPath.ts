@@ -1,4 +1,4 @@
-import { BLOG_PATH } from "@/content.config";
+import { BLOG_PATH, NOTES_PATH } from "@/content.config";
 import { slugifyStr } from "./slugify";
 
 /**
@@ -33,4 +33,23 @@ export function getPath(
   }
 
   return [basePath, ...pathSegments, slug].join("/");
+}
+
+export function getNotePath(id: string, filePath: string | undefined) {
+  const pathSegments = filePath
+    ?.replace(NOTES_PATH, "")
+    .split("/")
+    .filter(path => path !== "")
+    .filter(path => !path.startsWith("_"))
+    .slice(0, -1)
+    .map(segment => slugifyStr(segment));
+
+  const noteId = id.split("/");
+  const slug = noteId.length > 0 ? noteId.slice(-1) : noteId;
+
+  if (!pathSegments || pathSegments.length < 1) {
+    return ["/notes", slug].join("/");
+  }
+
+  return ["/notes", ...pathSegments, slug].join("/");
 }

@@ -9,13 +9,13 @@ import Datetime from "@/components/Datetime.astro";
 import LinkButton from "@/components/LinkButton.astro";
 import Pagination from "@/components/Pagination.astro";
 import getPostsByGroupCondition from "@/utils/getPostsByGroupCondition";
-import getSortedPosts from "@/utils/getSortedPosts";
-import { getPath } from "@/utils/getPath";
+import getSortedNotes from "@/utils/getSortedNotes";
+import { getNotePath } from "@/utils/getPath";
 import { SITE } from "@/config";
 
 export const getStaticPaths = (async ({ paginate }) => {
-  const posts = await getCollection("blog", ({ data }) => !data.draft);
-  return paginate(getSortedPosts(posts), { pageSize: SITE.postPerPage });
+  const notes = await getCollection("notes");
+  return paginate(getSortedNotes(notes), { pageSize: SITE.postPerPage });
 }) satisfies GetStaticPaths;
 
 const { page } = Astro.props;
@@ -36,19 +36,19 @@ const months = [
 ];
 ---
 
-<Layout title={`Posts | ${SITE.title}`}>
+<Layout title={`Notes | ${SITE.title}`}>
   <Header />
-  <Main pageTitle="Posts">
+  <Main pageTitle="Notes">
     {
       page.data.length === 0 && (
-        <p class="my-6 text-lg italic">No posts published yet.</p>
+        <p class="my-6 text-lg italic">No notes published yet.</p>
       )
     }
 
     {
       Object.entries(
-        getPostsByGroupCondition(page.data, post =>
-          post.data.pubDatetime.getFullYear()
+        getPostsByGroupCondition(page.data, note =>
+          note.data.pubDatetime.getFullYear()
         )
       )
         .sort(([yearA], [yearB]) => Number(yearB) - Number(yearA))
@@ -58,7 +58,7 @@ const months = [
             {Object.entries(
               getPostsByGroupCondition(
                 yearGroup,
-                post => post.data.pubDatetime.getMonth() + 1
+                note => note.data.pubDatetime.getMonth() + 1
               )
             )
               .sort(([monthA], [monthB]) => Number(monthB) - Number(monthA))
@@ -71,13 +71,13 @@ const months = [
                     {monthGroup.map(({ id, filePath, data }) => (
                       <li class="my-6">
                         <LinkButton
-                          href={getPath(id, filePath)}
+                          href={getNotePath(id, filePath)}
                           class="text-lg font-medium text-accent decoration-dashed underline-offset-4 hover:underline"
                         >
                           {data.title}
                         </LinkButton>
                         <Datetime {...data} />
-                        <p>{data.description}</p>
+                        {data.description && <p>{data.description}</p>}
                       </li>
                     ))}
                   </ul>

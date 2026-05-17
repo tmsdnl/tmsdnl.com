@@ -4,6 +4,7 @@ import { z } from "astro/zod";
 import { SITE } from "@/config";
 
 export const BLOG_PATH = "src/data/blog";
+export const NOTES_PATH = "src/data/notes";
 
 const blog = defineCollection({
   loader: glob({ pattern: "**/[^_]*.md", base: `./${BLOG_PATH}` }),
@@ -24,4 +25,16 @@ const blog = defineCollection({
     }),
 });
 
-export const collections = { blog };
+const notes = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.md", base: `./${NOTES_PATH}` }),
+  schema: z.object({
+    pubDatetime: z.date(),
+    modDatetime: z.date().optional().nullable(),
+    title: z.string(),
+    description: z.string().optional(),
+    draft: z.boolean().optional(),
+    timezone: z.string().optional(),
+  }),
+});
+
+export const collections = { blog, notes };

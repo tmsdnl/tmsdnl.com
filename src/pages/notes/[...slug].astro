@@ -1,0 +1,63 @@
+---
+import { type CollectionEntry, getCollection, render } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import BackButton from "@/components/BackButton.astro";
+import Datetime from "@/components/Datetime.astro";
+import getSortedNotes from "@/utils/getSortedNotes";
+import { getNotePath } from "@/utils/getPath";
+import { SITE } from "@/config";
+
+type Props = {
+  note: CollectionEntry<"notes">;
+};
+
+export async function getStaticPaths() {
+  const notes = getSortedNotes(await getCollection("notes"));
+
+  return notes.map(note => ({
+    params: {
+      slug: getNotePath(note.id, note.filePath).replace("/notes/", ""),
+    },
+    props: { note },
+  }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+
+const { description, pubDatetime, modDatetime, timezone, title } = note.data;
+
+const layoutProps = {
+  title: `${title} | ${SITE.title}`,
+  description: description ?? SITE.desc,
+  pubDatetime,
+  modDatetime,
+  scrollSmooth: true,
+};
+---
+
+<Layout {...layoutProps}>
+  <Header />
+  <BackButton />
+  <main
+    id="main-content"
+    class:list={["app-layout pb-12", { "mt-8": !SITE.showBackButton }]}
+    data-pagefind-body
+  >
+    <h1 class="inline-block text-2xl font-bold text-accent sm:text-3xl">
+      {title}
+    </h1>
+    <div class="my-2">
+      <Datetime {pubDatetime} {modDatetime} {timezone} size="lg" />
+    </div>
+    <article
+      id="article"
+      class="app-prose mt-6 w-full max-w-app prose-pre:bg-(--shiki-light-bg) dark:prose-pre:bg-(--shiki-dark-bg)"
+    >
+      <Content />
+    </article>
+  </main>
+  <Footer />
+</Layout>
