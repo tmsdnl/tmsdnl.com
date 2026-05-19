@@ -34,6 +34,7 @@ const notes = defineCollection({
     description: z.string().optional(),
     draft: z.boolean().optional(),
     timezone: z.string().optional(),
+    xUrl: z.url().optional(),
   }),
 });
 

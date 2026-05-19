@@ -1,0 +1,206 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { render } from "astro:content";
+import Datetime from "@/components/Datetime.astro";
+import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
+import IconBrandX from "@/assets/icons/IconBrandX.svg";
+import { getNotePath } from "@/utils/getPath";
+
+type Props = {
+  note: CollectionEntry<"notes">;
+  showTopBorder?: boolean;
+  preview?: boolean;
+  showSourceLink?: boolean;
+};
+
+const {
+  note,
+  showTopBorder = true,
+  preview = false,
+  showSourceLink = true,
+} = Astro.props;
+const { id, filePath, data } = note;
+const { Content } = await render(note);
+const href = getNotePath(id, filePath);
+const previewText = (note.body ?? "")
+  .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+  .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+  .replace(/[`*_>#]/g, "")
+  .replace(/(?:^|\n)\s*[-+]\s+/g, " ")
+  .replace(/\s+/g, " ")
+  .trim();
+const firstSentenceMatch = previewText.match(/.+?[.!?](?=\s|$)/);
+const excerpt = (firstSentenceMatch?.[0] ?? previewText.slice(0, 140)).trim();
+const excerptParts = excerpt.match(/^(.*\s)(\S+)$/);
+const excerptLead = excerptParts?.[1] ?? "";
+const excerptTail = excerptParts?.[2] ?? excerpt;
+---
+
+<li
+  class:list={[
+    "border-b border-border py-6 last:border-b-0",
+    { "first:border-t": showTopBorder },
+  ]}
+>
+  {
+    preview ? (
+      <>
+        <a
+          href={href}
+          class="text-current decoration-dashed underline-offset-4 hover:underline"
+          aria-label={`Permalink to ${data.title}`}
+        >
+          <Datetime {...data} />
+        </a>
+        <p class="mt-2">
+          {excerptLead}<span class="whitespace-nowrap"
+            >{excerptTail}<a
+              href={href}
+              class="inline-flex items-center text-accent hover:no-underline"
+              aria-label={`Read ${data.title}`}
+            >
+              &#8239;
+              <IconArrowRight class="inline-block rtl:-rotate-180" />
+            </a></span
+          >
+        </p>
+      </>
+    ) : (
+      <>
+        <div class="flex items-center">
+          <a
+            href={href}
+            class="text-current decoration-dashed underline-offset-4 hover:underline"
+            aria-label={`Permalink to ${data.title}`}
+          >
+            <Datetime {...data} />
+          </a>
+          {
+            showSourceLink && data.xUrl && (
+              <>
+                <span class="mx-3 text-sm opacity-40" aria-hidden="true">
+                  |
+                </span>
+                <a
+                  href={data.xUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center justify-center opacity-75 hover:text-accent"
+                  aria-label="Original post on X"
+                  title="Original post on X"
+                >
+                  <IconBrandX class="size-4" />
+                </a>
+              </>
+            )
+          }
+        </div>
+        <div
+          id={`note-${id}`}
+          class="note-preview note-expandable relative mt-1 flow-root max-h-44 overflow-hidden"
+        >
+          <article class="note-list-content app-prose max-w-none">
+            <Content />
+          </article>
+          <div
+            class="note-fade pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-background to-transparent"
+            aria-hidden="true"
+          />
+        </div>
+        <div class="mt-2 flex items-center gap-3">
+          <button
+            type="button"
+            class="note-toggle hidden text-sm font-medium text-accent decoration-dashed underline-offset-4 hover:underline"
+            aria-controls={`note-${id}`}
+            aria-expanded="false"
+          >
+            Show more
+          </button>
+        </div>
+      </>
+    )
+  }
+</li>
+
+<script>
+  let noteToggleTimeout: number | undefined;
+
+  function initNoteToggles() {
+    document
+      .querySelectorAll<HTMLButtonElement>(".note-toggle")
+      .forEach(button => {
+        const noteId = button.getAttribute("aria-controls");
+        const note = noteId ? document.getElementById(noteId) : null;
+        const fade = note?.querySelector(".note-fade");
+        const content = note?.querySelector(".note-list-content");
+
+        if (!note) return;
+
+        note.classList.toggle(
+          "ends-with-media",
+          content?.lastElementChild?.tagName === "IMG" ||
+            content?.lastElementChild?.matches("p:has(> img:only-child)") ===
+              true
+        );
+
+        note.querySelectorAll<HTMLImageElement>("img").forEach(image => {
+          if (image.dataset.noteToggleLoadReady === "true") return;
+          image.dataset.noteToggleLoadReady = "true";
+          image.addEventListener("load", scheduleNoteToggleInit, {
+            once: true,
+          });
+        });
+
+        const expanded = button.getAttribute("aria-expanded") === "true";
+        const hasOverflow =
+          expanded || note.scrollHeight > note.clientHeight + 1;
+        button.classList.toggle("hidden", !hasOverflow);
+        fade?.classList.toggle("hidden", !hasOverflow || expanded);
+
+        if (!hasOverflow || button.dataset.noteToggleReady === "true") return;
+
+        button.dataset.noteToggleReady = "true";
+        button.addEventListener("click", () => {
+          const expanded = button.getAttribute("aria-expanded") === "true";
+
+          button.setAttribute("aria-expanded", String(!expanded));
+          button.textContent = expanded ? "Show more" : "Show less";
+          note.classList.toggle("max-h-44", expanded);
+          fade?.classList.toggle("hidden", !expanded);
+        });
+      });
+  }
+
+  function scheduleNoteToggleInit() {
+    initNoteToggles();
+    requestAnimationFrame(initNoteToggles);
+    window.clearTimeout(noteToggleTimeout);
+    noteToggleTimeout = window.setTimeout(initNoteToggles, 250);
+  }
+
+  scheduleNoteToggleInit();
+  document.addEventListener("astro:page-load", scheduleNoteToggleInit);
+  window.addEventListener("resize", scheduleNoteToggleInit);
+</script>
+
+<style>
+  :global(.note-list-content > :first-child) {
+    margin-top: 0.25rem;
+  }
+
+  :global(.note-list-content > :last-child) {
+    margin-bottom: 0;
+  }
+
+  :global(.note-list-content > p:has(> img:only-child)) {
+    margin-block: 1rem 0;
+  }
+
+  :global(.note-preview.note-expandable:not(.max-h-44)) {
+    padding-bottom: 2rem;
+  }
+
+  :global(.note-preview.note-expandable.ends-with-media:not(.max-h-44)) {
+    padding-bottom: 0.5rem;
+  }
+</style>

@@ -5,12 +5,10 @@ import Main from "@/layouts/Main.astro";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
-import Datetime from "@/components/Datetime.astro";
-import LinkButton from "@/components/LinkButton.astro";
+import Card from "@/components/Card.astro";
 import Pagination from "@/components/Pagination.astro";
 import getPostsByGroupCondition from "@/utils/getPostsByGroupCondition";
 import getSortedPosts from "@/utils/getSortedPosts";
-import { getPath } from "@/utils/getPath";
 import { SITE } from "@/config";
 
 export const getStaticPaths = (async ({ paginate }) => {
@@ -68,17 +66,8 @@ const months = [
                     <span class="font-bold">{months[Number(month) - 1]}</span>
                   </div>
                   <ul class="grow">
-                    {monthGroup.map(({ id, filePath, data }) => (
-                      <li class="my-6">
-                        <LinkButton
-                          href={getPath(id, filePath)}
-                          class="text-lg font-medium text-accent decoration-dashed underline-offset-4 hover:underline"
-                        >
-                          {data.title}
-                        </LinkButton>
-                        <Datetime {...data} />
-                        <p>{data.description}</p>
-                      </li>
+                    {monthGroup.map(post => (
+                      <Card {...post} />
                     ))}
                   </ul>
                 </div>

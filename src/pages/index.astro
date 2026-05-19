@@ -6,17 +6,34 @@ import Footer from "@/components/Footer.astro";
 import Socials from "@/components/Socials.astro";
 import LinkButton from "@/components/LinkButton.astro";
 import Card from "@/components/Card.astro";
+import NoteListItem from "@/components/NoteListItem.astro";
 import getSortedPosts from "@/utils/getSortedPosts";
+import getSortedNotes from "@/utils/getSortedNotes";
 import IconRss from "@/assets/icons/IconRss.svg";
 import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
-import { SITE } from "@/config";
 import { SOCIALS } from "@/constants";
 
 const posts = await getCollection("blog");
+const notes = await getCollection("notes");
 
 const sortedPosts = getSortedPosts(posts);
+const sortedNotes = getSortedNotes(notes);
 const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
 const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
+const recentItems = [
+  ...recentPosts.map(post => ({
+    kind: "post" as const,
+    item: post,
+    datetime: post.data.modDatetime ?? post.data.pubDatetime,
+  })),
+  ...sortedNotes.map(note => ({
+    kind: "note" as const,
+    item: note,
+    datetime: note.data.modDatetime ?? note.data.pubDatetime,
+  })),
+]
+  .sort((a, b) => b.datetime.getTime() - a.datetime.getTime())
+  .slice(0, 5);
 ---
 
 <Layout>
@@ -56,13 +73,13 @@ const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
           id="featured"
           class:list={[
             "pt-12 pb-6",
-            { "border-b border-border": recentPosts.length > 0 },
+            { "border-b border-border": recentItems.length > 0 },
           ]}
         >
           <h2 class="text-2xl font-semibold tracking-wide">Featured</h2>
           <ul>
             {featuredPosts.map(data => (
-              <Card variant="h3" {...data} />
+              <Card variant="h3" showTopBorder={false} {...data} />
             ))}
           </ul>
         </section>
@@ -70,22 +87,34 @@ const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
     }
 
     {
-      recentPosts.length > 0 && (
-        <section id="recent-posts" class="pt-12 pb-6">
-          <h2 class="text-2xl font-semibold tracking-wide">Recent Posts</h2>
+      recentItems.length > 0 && (
+        <section id="recent" class="pt-6 pb-6">
+          <h2 class="mb-1 text-lg font-semibold tracking-wide">Recent</h2>
           <ul>
-            {recentPosts.map(
-              (data, index) =>
-                index < SITE.postPerIndex && <Card variant="h3" {...data} />
+            {recentItems.map(data =>
+              data.kind === "post" ? (
+                <Card variant="h3" showTopBorder={false} {...data.item} />
+              ) : (
+                <NoteListItem
+                  note={data.item}
+                  showTopBorder={false}
+                  showSourceLink={false}
+                  preview
+                />
+              )
             )}
           </ul>
         </section>
       )
     }
 
-    <div class="my-8 text-center">
+    <div class="my-8 flex justify-center gap-3 text-center">
       <LinkButton href="/posts/">
         All Posts
+        <IconArrowRight class="inline-block rtl:-rotate-180" />
+      </LinkButton>
+      <LinkButton href="/notes/">
+        All Notes
         <IconArrowRight class="inline-block rtl:-rotate-180" />
       </LinkButton>
     </div>

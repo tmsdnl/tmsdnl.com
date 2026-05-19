@@ -6,16 +6,29 @@ import Datetime from "./Datetime.astro";
 
 type Props = {
   variant?: "h2" | "h3";
+  showTopBorder?: boolean;
 } & CollectionEntry<"blog">;
 
-const { variant: Heading = "h2", id, data, filePath } = Astro.props;
+const {
+  variant: Heading = "h2",
+  showTopBorder = true,
+  id,
+  data,
+  filePath,
+} = Astro.props;
 
 const { title, description, ...props } = data;
+const href = getPath(id, filePath);
 ---
 
-<li class="my-6">
+<li
+  class:list={[
+    "border-b border-border py-6 last:border-b-0",
+    { "first:border-t": showTopBorder },
+  ]}
+>
   <a
-    href={getPath(id, filePath)}
+    href={href}
     class:list={[
       "inline-block text-lg font-medium text-accent",
       "decoration-dashed underline-offset-4 hover:underline",
@@ -28,6 +41,6 @@ const { title, description, ...props } = data;
       {title}
     </Heading>
   </a>
-  <Datetime {...props} />
-  <p>{description}</p>
+  <Datetime class="mt-1" {...props} />
+  <p class="mt-1">{description}</p>
 </li>
