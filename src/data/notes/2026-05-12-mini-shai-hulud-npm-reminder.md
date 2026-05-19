@@ -9,8 +9,8 @@ Mini Shai-Hulud / npm reminder:
 
 You may not have run npm install yourself and still have tooling pulling packages via npx, npm exec, or MCP servers.
 
-Most useful check I found:
-$ grep -R -E "verbose title|verbose argv|http fetch|tarball|postinstall|run-script" ~/.npm/\_logs
+Most useful check I found:<br/>
+`$ grep -R -E "verbose title|verbose argv|http fetch|tarball|postinstall|run-script" ~/.npm/\_logs`
 
 Mine exposed repeated npm exec @browsermcp/mcp@latest calls.
 

@@ -5,6 +5,8 @@ import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import BackButton from "@/components/BackButton.astro";
 import Datetime from "@/components/Datetime.astro";
+import LinkButton from "@/components/LinkButton.astro";
+import IconBrandX from "@/assets/icons/IconBrandX.svg";
 import getSortedNotes from "@/utils/getSortedNotes";
 import { getNotePath } from "@/utils/getPath";
 import { SITE } from "@/config";
@@ -27,7 +29,8 @@ export async function getStaticPaths() {
 const { note } = Astro.props;
 const { Content } = await render(note);
 
-const { description, pubDatetime, modDatetime, timezone, title } = note.data;
+const { description, pubDatetime, modDatetime, timezone, title, xUrl } =
+  note.data;
 
 const layoutProps = {
   title: `${title} | ${SITE.title}`,
@@ -49,8 +52,28 @@ const layoutProps = {
     <h1 class="inline-block text-2xl font-bold text-accent sm:text-3xl">
       {title}
     </h1>
-    <div class="my-2">
+    <div class="my-2 flex items-center">
       <Datetime {pubDatetime} {modDatetime} {timezone} size="lg" />
+      {
+        xUrl && (
+          <>
+            <span class="mx-3 text-sm opacity-40" aria-hidden="true">
+              |
+            </span>
+            <LinkButton
+              href={xUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="p-0 opacity-75"
+              aria-label="Original post on X"
+              title="Original post on X"
+            >
+              <IconBrandX class="inline-block size-6 min-w-5.5 scale-85 fill-transparent stroke-current stroke-2 group-hover:fill-transparent" />
+              <span class="sr-only">Original post on X</span>
+            </LinkButton>
+          </>
+        )
+      }
     </div>
     <article
       id="article"
