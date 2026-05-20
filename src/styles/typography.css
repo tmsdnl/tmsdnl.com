@@ -43,8 +43,17 @@
       @apply border-border;
     }
 
+    p:has(> img:only-child) {
+      @apply my-8;
+    }
+
+    p:has(> img:only-child) img {
+      @apply my-0;
+    }
+
     img {
       @apply mx-auto border border-border;
+      width: min(100%, 32rem);
     }
 
     figcaption {
