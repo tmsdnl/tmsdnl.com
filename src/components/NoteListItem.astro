@@ -30,7 +30,11 @@ const previewText = (note.body ?? "")
   .replace(/\s+/g, " ")
   .trim();
 const firstSentenceMatch = previewText.match(/.+?[.!?](?=\s|$)/);
-const excerpt = (firstSentenceMatch?.[0] ?? previewText.slice(0, 140)).trim();
+const excerpt = (
+  data.excerpt ??
+  firstSentenceMatch?.[0] ??
+  previewText.slice(0, 140)
+).trim();
 const excerptParts = excerpt.match(/^(.*\s)(\S+)$/);
 const excerptLead = excerptParts?.[1] ?? "";
 const excerptTail = excerptParts?.[2] ?? excerpt;

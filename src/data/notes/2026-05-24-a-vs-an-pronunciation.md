@@ -1,5 +1,6 @@
 ---
 title: "A vs. an is based on pronunciation"
+excerpt: I always thought "a" vs. "an" was based on the written first letter, but the real rule is pronunciation.
 pubDatetime: 2026-05-24T17:55:00-07:00
 timezone: America/Los_Angeles
 xUrl: https://x.com/tmsdnl/status/2058714680118641049

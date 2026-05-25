@@ -32,6 +32,7 @@ const notes = defineCollection({
     modDatetime: z.date().optional().nullable(),
     title: z.string(),
     description: z.string().optional(),
+    excerpt: z.string().optional(),
     draft: z.boolean().optional(),
     timezone: z.string().optional(),
     xUrl: z.url().optional(),
